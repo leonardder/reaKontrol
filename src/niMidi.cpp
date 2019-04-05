@@ -67,6 +67,10 @@ const unsigned char CMD_KNOB_PAN5 = 0x5c;
 const unsigned char CMD_KNOB_PAN6 = 0x5d;
 const unsigned char CMD_KNOB_PAN7 = 0x5e;
 const unsigned char CMD_KNOB_PAN8 = 0x5f;
+const unsigned char CMD_PLAY_CLIP = 0x60;
+const unsigned char CMD_STOP_CLIP = 0x61;
+const unsigned char CMD_PLAY_SCENE = 0x62;
+const unsigned char CMD_STOP_SCENE = 0x63;
 const unsigned char CMD_CHANGE_VOLUME = 0x64;
 const unsigned char CMD_CHANGE_PAN = 0x65;
 const unsigned char CMD_TOGGLE_MUTE = 0x66;
@@ -170,6 +174,11 @@ class NiMidiSurface: public BaseSurface {
 			case CMD_MOVE_TRANSPORT:
 				CSurf_ScrubAmt(convertSignedMidiValue(value));
 				break;
+			case CMD_TRACK_MUTED:
+			case CMD_TRACK_SOLOED:
+			case CMD_TRACK_ARMED:
+				this->_onStateChange(command, convertSignedMidiValue(value));
+				break;
 			case CMD_KNOB_VOLUME1:
 			case CMD_KNOB_VOLUME2:
 			case CMD_KNOB_VOLUME3:
@@ -189,6 +198,12 @@ class NiMidiSurface: public BaseSurface {
 			case CMD_KNOB_PAN7:
 			case CMD_KNOB_PAN8:
 				this->_onKnobPanChange(command, convertSignedMidiValue(value));
+				break;
+			case CMD_PLAY_CLIP:
+			case CMD_STOP_CLIP:
+			case CMD_PLAY_SCENE:
+			case CMD_STOP_SCENE:
+				// Currently unimplemented
 				break;
 			default:
 				ostringstream s;
@@ -237,17 +252,40 @@ class NiMidiSurface: public BaseSurface {
 		// todo: navigate tracks, navigate banks
 	}
 
+	void _onStateChange(unsigned char command, signed char value) {
+		int numInBank = value % BANK_NUM_TRACKS;
+		MediaTrack* track = CSurf_TrackFromID(numInBank + this->_bankStart, false);
+		if (!track) {
+			return;
+		}
+		switch (command) {
+			case CMD_TRACK_MUTED:
+				CSurf_SetSurfaceMute(track, CSurf_OnMuteChange(track, -1), nullptr);
+				break;
+			case CMD_TRACK_SOLOED:
+				CSurf_SetSurfaceSolo(track, CSurf_OnSoloChange(track, -1), nullptr);
+				break;
+			case CMD_TRACK_ARMED:
+				CSurf_SetSurfaceRecArm(track, CSurf_OnRecArmChange(track, -1), nullptr);
+				break;
+		}
+	}
+
 	void _onKnobVolumeChange(unsigned char command, signed char value) {
 		int numInBank = command - CMD_KNOB_VOLUME1 + 1;
 		MediaTrack* track = CSurf_TrackFromID(numInBank + this->_bankStart, false);
-		if (!track) return;
+		if (!track) {
+			return;
+		}
 		CSurf_SetSurfaceVolume(track, CSurf_OnVolumeChange(track, value * 0.1, true), nullptr);
 	}
 
 	void _onKnobPanChange(unsigned char command, signed char value) {
 		int numInBank = command - CMD_KNOB_VOLUME1 + 1;
 		MediaTrack* track = CSurf_TrackFromID(numInBank + this->_bankStart, false);
-		if (!track) return;
+		if (!track) {
+			return;
+		}
 		CSurf_SetSurfacePan(track, CSurf_OnPanChange(track, value * 1.0, true), nullptr);
 	}
 

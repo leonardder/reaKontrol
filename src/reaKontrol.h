@@ -34,9 +34,16 @@
 #define REAPERAPI_WANT_CSurf_ScrubAmt
 #define REAPERAPI_WANT_GetSetMediaTrackInfo
 #define REAPERAPI_WANT_CSurf_SetSurfaceVolume
-#define REAPERAPI_WANT_CSurf_SetSurfacePan
 #define REAPERAPI_WANT_CSurf_OnVolumeChange
+#define REAPERAPI_WANT_CSurf_SetSurfacePan
 #define REAPERAPI_WANT_CSurf_OnPanChange
+#define REAPERAPI_WANT_CSurf_SetSurfaceMute
+#define REAPERAPI_WANT_CSurf_OnMuteChange
+#define REAPERAPI_WANT_CSurf_SetSurfaceSolo
+#define REAPERAPI_WANT_CSurf_OnSoloChange
+#define REAPERAPI_WANT_CSurf_SetSurfaceRecArm
+#define REAPERAPI_WANT_CSurf_OnRecArmChange
+
 #include <reaper/reaper_plugin.h>
 #include <reaper/reaper_plugin_functions.h>
 
